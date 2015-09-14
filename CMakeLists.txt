@@ -21,6 +21,10 @@ option(GLEW_BUILD_INFO "Build glewinfo & visualinfo binaries" ON)
 option(GLEW_USE_GLU "Build using GLU library" OFF)
 option(GLEW_INSTALL "Generate installation target" ON)
 
+if (MSVC)
+    option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
+endif()
+
 find_package(OpenGL REQUIRED)
 list(APPEND glew_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
 
@@ -28,11 +32,31 @@ list(APPEND glew_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
 # Set compiler specific flags
 #--------------------------------------------------------------------
 if(WIN32)
-	add_definitions(-DWIN32_MEAN_AND_LEAN -DVC_EXTRALEAN -DGLEW_BUILD -D_CRT_SECURE_NO_WARNINGS)
+	add_definitions(-DWIN32_MEAN_AND_LEAN -DVC_EXTRALEAN -DGLEW_BUILD)
 endif()
 
 if(NOT GLEW_USE_GLU)
 	add_definitions(-DGLEW_NO_GLU)
+endif()
+
+if (MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    
+    if (NOT USE_MSVC_RUNTIME_LIBRARY_DLL)
+        foreach (flag CMAKE_C_FLAGS
+                        CMAKE_C_FLAGS_DEBUG
+                        CMAKE_C_FLAGS_RELEASE
+                        CMAKE_C_FLAGS_MINSIZEREL
+                        CMAKE_C_FLAGS_RELWITHDEBINFO)
+
+            if (${flag} MATCHES "/MD")
+                string(REGEX REPLACE "/MD" "/MT" ${flag} "${${flag}}")
+            endif()
+            if (${flag} MATCHES "/MDd")
+                string(REGEX REPLACE "/MDd" "/MTd" ${flag} "${${flag}}")
+            endif()
+        endforeach()
+    endif()
 endif()
 
 if (WIN32)
