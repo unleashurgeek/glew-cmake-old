@@ -3,6 +3,7 @@ compiler:
     - clang
     - gcc
 install:
+    - sudo add-apt-repository --yes ppa:kalakris/cmake
     - sudo apt-get -qq update
-    - sudo apt-get -qq install -y xorg-dev libglu1-mesa-dev cmake
+    - sudo apt-get -qq install -y cmake
 script: cmake . && make
